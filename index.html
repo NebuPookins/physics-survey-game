@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Survey Prediction Quiz</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .game-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            max-width: 800px;
+            width: 100%;
+            overflow: hidden;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .screen {
+            padding: 40px;
+            text-align: center;
+            display: none;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 2.5em;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        h2 {
+            color: #444;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+
+        .rules-text {
+            font-size: 1.1em;
+            line-height: 1.6;
+            color: #666;
+            margin-bottom: 30px;
+            text-align: left;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .question-image {
+            max-width: 100%;
+            max-height: 300px;
+            margin-left: auto;
+            margin-right: auto;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .question-text {
+            font-size: 1.2em;
+            color: #333;
+            margin: 20px 0;
+            line-height: 1.5;
+        }
+
+        .answers-container {
+            margin: 30px 0;
+        }
+
+        .answer-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin: 15px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .answer-text {
+            flex: 1;
+            text-align: left;
+            font-size: 1.1em;
+            color: #333;
+        }
+
+        .answer-input {
+            width: 80px;
+            padding: 8px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            text-align: center;
+            font-size: 1em;
+            margin-left: 15px;
+        }
+
+        .answer-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .total-display {
+            margin: 20px 0;
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .total-display.error {
+            color: #e74c3c;
+        }
+
+        .total-display.success {
+            color: #27ae60;
+        }
+
+        .results-container {
+            margin: 20px 0;
+        }
+
+        .result-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin: 10px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 4px solid #27ae60;
+        }
+
+        .result-text {
+            flex: 1;
+            text-align: left;
+            font-size: 1.1em;
+            color: #333;
+        }
+
+        .result-values {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .guess-value {
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .correct-value {
+            color: #27ae60;
+            font-weight: bold;
+        }
+
+        .score-display {
+            font-size: 1.5em;
+            margin: 20px 0;
+            padding: 20px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border-radius: 15px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background: #eee;
+            border-radius: 5px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            transition: width 0.3s ease;
+        }
+
+        .explanation-text {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: left;
+            line-height: 1.6;
+            color: #555;
+        }
+
+        .config-section {
+            margin: 30px 0;
+            text-align: left;
+        }
+
+        .config-textarea {
+            width: 100%;
+            height: 200px;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            resize: vertical;
+        }
+
+        .config-textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .error-message {
+            color: #e74c3c;
+            background: #ffe6e6;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            border-left: 4px solid #e74c3c;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <!-- Title Screen -->
+        <div id="title-screen" class="screen active">
+            <h1>2024 Copenhagen Physicists Survey Quiz</h1>
+            <div class="rules-text">
+                <p>
+                  In 2024, physicists attending the Copenhagent "Black holes Inside and out" conference were asked to
+                  fill in a survey on some of the most contentious issues in fundamental physics, including the nature
+                  of black holes and dark energy. 85 of them responded and their answers have been collected here.
+                  Your job is to guess what proportion of physicists picked each answer.</p>
+                <br>
+                <p><strong>How to play:</strong></p>
+                <ul style="text-align: left; margin-left: 20px;">
+                    <li>For each question, you'll see all possible answers</li>
+                    <li>Enter your prediction for what percentage of people chose each answer</li>
+                    <li>Your percentages should add up to 100%</li>
+                    <li>The closer your guesses are to the actual results, the more points you'll score!</li>
+                    <li>Remember, you're not trying to guess the answer that correctly describes our universe; you're trying to guess which answers were picked by which proportion of physiscists.</li>
+                </ul>
+                <br>
+                <p>Ready to test how well you know physicists?</p>
+            </div>
+            <button class="btn" onclick="startGame()">Start Quiz</button>
+        </div>
+
+        <!-- Question Screen -->
+        <div id="question-screen" class="screen">
+            <div class="progress-bar">
+                <div id="progress-fill" class="progress-fill"></div>
+            </div>
+            <h2 id="question-title"></h2>
+            <img id="question-image" class="question-image" style="display: none;">
+            <div id="question-text" class="question-text"></div>
+            <div id="answers-container" class="answers-container"></div>
+            <div id="total-display" class="total-display">Total: 0%</div>
+            <button class="btn" id="submit-btn" onclick="submitAnswers()" disabled>Submit Answers</button>
+        </div>
+
+        <!-- Results Screen -->
+        <div id="results-screen" class="screen">
+            <h2>Results</h2>
+            <div id="question-score" class="score-display"></div>
+            <div id="results-container" class="results-container"></div>
+            <div id="explanation-text" class="explanation-text"></div>
+            <button class="btn" onclick="nextQuestion()">Next Question</button>
+        </div>
+
+        <!-- Final Score Screen -->
+        <div id="final-screen" class="screen">
+            <h2>Quiz Complete!</h2>
+            <div id="final-score" class="score-display"></div>
+            <div id="final-text" class="explanation-text"></div>
+            <button class="btn" onclick="restartGame()">Play Again</button>
+        </div>
+    </div>
+
+    <script>
+        // Sample quiz configuration
+        const sampleQuiz = {
+            //title: "Popular Survey Predictions",
+            //rules: "Predict how popular each answer was in our survey of 1000 people!",
+            questions: [
+                {
+                    title: "Black Hole Information Loss",
+                    image: "./black-holes-monsters-in-space-artist-concept-aeb932-1024.webp",
+                    text: "What is the most likely correct description of the information that falls into a black hole?",
+                    answers: [
+                        { text: "It's preserved in a remnant", correct: Math.round(2000/(20+21+17)) },
+                        { text: "It's preserved in Hawking Radiation", correct: Math.round(2100/(20+21+17)) },
+                        { text: "It's irretrievably lost", correct: Math.round(1700/(20+21+17)) },
+                    ],
+                    explanation: "Since the 1970’s, it has been argued that black holes in general relativity destroy information, potentially violating the unitarity principle of quantum mechanics. Several solutions to this paradox have been proposed but no consensus currently exists. The results gathered from this survey show that most physicists do believe that information is preserved either in a remnant, or in Hawking radiation. However, there is a significant minority that believes information is permanently lost in black holes, which is in tension with the claim amongst experts that the issue is now settled by the holographic principle. In fact, both remnants and the destruction of information are in conflict with the holographic principle, as remnants have more entropy than their area permits, and information should always be preserved on the holographic boundary."
+                },
+                {
+                    title: "Fate of Matter in Black Holes",
+                    image: "./wormhole-time-travel-portal-vortex-preview.jpg",
+                    text: "What is likely to happen to the matter that falls into a black hole?",
+                    answers: [
+                        { text: "It bounces out into our universe", correct: Math.round(900/(9+8+22+32)) },
+                        { text: "It bounces out into another universe", correct: Math.round(800/(9+8+22+32)) },
+                        { text: "It is crushed into a singularity", correct: Math.round(2200/(9+8+22+32)) },
+                        { text: "Other", correct: Math.round(3200/(9+8+22+32)) },
+                    ],
+                    explanation: "In classical relativity, it has been proven that matter falling into a black hole will be crushed into a singularity. But do physicists believe this really happens, or are they happy to entertain more exotic alternatives? The classical view remains favoured by a substantial portion of respondents. While no individual alternative to the singularity problem garners a higher level of approval, the combined backing for the three proposed exotic solutions exceeds that of the classical option."
+                },
+                {
+                    title: "Interpretations of Quantum Mechanics",
+                    image: "./Quantum_mechanics_travelling_wavefunctions_wavelength.svg",
+                    text: "Which interpretation of quantum mechanics is most likely to be correct?",
+                    answers: [
+                        { text: "Copenhagen", correct: Math.round(2300/(23+9+22)) },
+                        { text: "Many Worlds", correct: Math.round(900/(23+9+22)) },
+                        { text: "Other", correct: Math.round(2200/(23+9+22)) },
+                    ],
+                    explanation: "Quantum mechanics has been described as both a great success in physics but also 'a scandal' in that despite a remarkable predictive accuracy, its physical interpretation remains elusive. Our survey shows the two most well-known 'interpretations' of quantum mechanics, Copenhagen and Many Worlds, are indeed the most popular choices amongst those who chose a specific option"
+                },
+                {
+                    title: "Quantum Gravity",
+                    image: "./String_Vibrations.gif",
+                    text: "Which the best candidate for a theory of quantum gravity?",
+                    answers: [
+                        { text: "String/M Theory", correct: Math.round(1600/(16+5+38)) },
+                        { text: "Loop Quantum Gravity", correct: Math.round(500/(16+5+38)) },
+                        { text: "Other", correct: Math.round(3800/(16+5+38)) },
+                    ],
+                    explanation: "" //TODO
+                },
+                {
+                    title: "Dark Matter",
+                    image: "./Galaxy_Cluster_ZwCl_0024+1652_and_Dark_Matter_Map.jpg",
+                    text: "What is likely to be the predominant explanation for the apparent dark matter in the universe?",
+                    answers: [
+                        { text: "New form of matter (axions, WIMPs, etc.)", correct: Math.round(1100/(11+4+12)) },
+                        { text: "Modification to gravity", correct: Math.round(400/(11+4+12)) },
+                        { text: "Primordial black holes", correct: Math.round(1200/(11+4+12)) },
+                    ],
+                    explanation: "The standard model of cosmology, LCDM, assumes most of the matter in the universe is “dark”, meaning that it does not interact with electromagnetic radiation. However, establishing which of the many dark matter candidates is part of nature (and which are not) has not been accomplished by science. In our survey, the most popular specific candidate is “primordial black holes”. However, the fact that this survey was performed at a black hole conference may be a contributing factor to this result."
+                },
+                {
+                    title: "Early Universe Cosmology",
+                    image: "./cmb-timeline300-no-wmap-6ab877-1024.jpg",
+                    text: "Issues such as the horizon problem, flatness, and origin of structure problem are most likely solved by which scheme?",
+                    answers: [
+                        { text: "Cosmic Inflation", correct: Math.round(3400/(34+6+28)) },
+                        { text: "Bouncing or Cyclic Universe", correct: Math.round(600/(34+6+28)) },
+                        { text: "Other", correct: Math.round(2800/(34+6+28)) },
+                    ],
+                    explanation: "" //TODO
+                },
+                {
+                    title: " Meaning of the Big Bang",
+                    image: "./bigbang.jpeg",
+                    text: "How should we understand the Big Bang?",
+                    answers: [
+                        { text: "An absolute beginning of time", correct: Math.round(1400/(15+54)) },
+                        { text: "A theory that says the universe evolved from a hot dense state that says nothing about whether there was an absolute beginning of time or not", correct: Math.round(5400/(14+54)) },
+                    ],
+                    explanation: "It has been claimed that the Big Bang represents the beginning of time and this is a view now “taken for granted“. However, a challenge comes from Guth, who claimed that the Big Bang is “a theory of the aftermath of the bang“ that says, “nothing about what banged, why it banged, or what happened before it banged“. The very meaning of the term Big Bang is thus not agreed upon. Our survey results strongly favour Guth’s view over Hawking’s. An important implication of this result is that it may not be correct to say that scientists believe that the universe has a beginning, or even that it is 13.8 billion years old, rather it is at least 13.8 billion years old."
+                },
+                {
+                    title: "Dark Energy",
+                    image: "./new-clues-about-the-nature-of-dark-energy-einstein-may-have-been-right-after-c4d2ea-1024.jpg",
+                    text: "What is the most likely candidate to be causing the universe to accelerate in its expansion?",
+                    answers: [
+                        { text: "A cosmological constant", correct: Math.round(2900/(29+12+22)) },
+                        { text: "A time varying field", correct: Math.round(1200/(29+12+22)) },
+                        { text: "Some modification to gravity", correct: Math.round(2200/(29+12+22)) },
+                    ],
+                    explanation: "An important implication for science communicators is that it may not be correct to say that scientists agree the ultimate fate of the universe is a “heat death“. This would be the case if there was a majority view for a cosmological constant. However, our survey shows this option falling below the threshold of support required." //TODO
+                },
+            ],
+            finalText: "Thanks for playing! Polling scientists does not decide the resolution of scientific controversies. However, it can be useful for sociologists and historians of science to understand how scientific views may change over time. It is also useful for communicators of science to know what leading researchers in a field think. You can find the full results of the survey at https://arxiv.org/pdf/2503.15776v2"
+        };
+
+        let currentQuiz = sampleQuiz;
+        let currentQuestionIndex = 0;
+        let totalScore = 0;
+        let answers = {};
+
+        function showTitleScreen() {
+            showScreen('title-screen');
+        }
+
+        function startGame() {
+            currentQuestionIndex = 0;
+            totalScore = 0;
+            answers = {};
+            showQuestion();
+        }
+
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        function showQuestion() {
+            showScreen('question-screen');
+            
+            const question = currentQuiz.questions[currentQuestionIndex];
+            const progress = ((currentQuestionIndex + 1) / currentQuiz.questions.length) * 100;
+            
+            document.getElementById('progress-fill').style.width = progress + '%';
+            document.getElementById('question-title').textContent = question.title;
+            document.getElementById('question-text').textContent = question.text;
+            
+            // Handle image
+            const imageEl = document.getElementById('question-image');
+            if (question.image) {
+                imageEl.src = question.image;
+                imageEl.style.display = 'block';
+                imageEl.onerror = function() {
+                    this.style.display = 'none';
+                };
+            } else {
+                imageEl.style.display = 'none';
+            }
+            
+            // Create answer inputs
+            const container = document.getElementById('answers-container');
+            container.innerHTML = '';
+            
+            question.answers.forEach((answer, index) => {
+                const row = document.createElement('div');
+                row.className = 'answer-row';
+                
+                const text = document.createElement('div');
+                text.className = 'answer-text';
+                text.textContent = answer.text;
+                
+                const input = document.createElement('input');
+                input.type = 'number';
+                input.className = 'answer-input';
+                input.min = '0';
+                input.max = '100';
+                input.value = '0';
+                input.id = `answer-${index}`;
+                input.addEventListener('input', updateTotal);
+                
+                const label = document.createElement('label');
+                label.textContent = '%';
+                label.style.marginLeft = '5px';
+                
+                row.appendChild(text);
+                row.appendChild(input);
+                row.appendChild(label);
+                container.appendChild(row);
+            });
+            
+            updateTotal();
+        }
+
+        function updateTotal() {
+            const question = currentQuiz.questions[currentQuestionIndex];
+            let total = 0;
+            
+            question.answers.forEach((_, index) => {
+                const input = document.getElementById(`answer-${index}`);
+                const value = parseFloat(input.value) || 0;
+                total += value;
+            });
+            
+            const totalDisplay = document.getElementById('total-display');
+            totalDisplay.textContent = `Total: ${total.toFixed(1)}%`;
+            
+            const submitBtn = document.getElementById('submit-btn');
+            if (Math.abs(total - 100) < 0.1) {
+                totalDisplay.className = 'total-display success';
+                submitBtn.disabled = false;
+            } else {
+                totalDisplay.className = 'total-display error';
+                submitBtn.disabled = true;
+            }
+        }
+
+        function submitAnswers() {
+            const question = currentQuiz.questions[currentQuestionIndex];
+            const userAnswers = [];
+            
+            question.answers.forEach((_, index) => {
+                const input = document.getElementById(`answer-${index}`);
+                userAnswers.push(parseFloat(input.value) || 0);
+            });
+            
+            answers[currentQuestionIndex] = userAnswers;
+            showResults();
+        }
+
+        function showResults() {
+            showScreen('results-screen');
+            
+            const question = currentQuiz.questions[currentQuestionIndex];
+            const userAnswers = answers[currentQuestionIndex];
+            
+            // Calculate score for this question
+            let questionScore = 0;
+            question.answers.forEach((answer, index) => {
+                const diff = Math.abs(userAnswers[index] - answer.correct);
+                questionScore += Math.max(0, 100 - diff * 2); // 2 points lost per percentage point off
+            });
+            questionScore = Math.round(questionScore / question.answers.length);
+            
+            totalScore += questionScore;
+            
+            document.getElementById('question-score').textContent = `Question Score: ${questionScore}/100 points`;
+            
+            // Show results comparison
+            const container = document.getElementById('results-container');
+            container.innerHTML = '';
+            
+            question.answers.forEach((answer, index) => {
+                const row = document.createElement('div');
+                row.className = 'result-row';
+                
+                const text = document.createElement('div');
+                text.className = 'result-text';
+                text.textContent = answer.text;
+                
+                const values = document.createElement('div');
+                values.className = 'result-values';
+                
+                const guess = document.createElement('div');
+                guess.className = 'guess-value';
+                guess.textContent = `Your guess: ${userAnswers[index]}%`;
+                
+                const correct = document.createElement('div');
+                correct.className = 'correct-value';
+                correct.textContent = `Actual: ${answer.correct}%`;
+                
+                values.appendChild(guess);
+                values.appendChild(correct);
+                row.appendChild(text);
+                row.appendChild(values);
+                container.appendChild(row);
+            });
+            
+            // Show explanation
+            const explanationEl = document.getElementById('explanation-text');
+            if (question.explanation) {
+                explanationEl.textContent = question.explanation;
+                explanationEl.style.display = 'block';
+            } else {
+                explanationEl.style.display = 'none';
+            }
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            
+            if (currentQuestionIndex >= currentQuiz.questions.length) {
+                showFinalScore();
+            } else {
+                showQuestion();
+            }
+        }
+
+        function showFinalScore() {
+            showScreen('final-screen');
+            
+            const maxScore = currentQuiz.questions.length * 100;
+            const percentage = Math.round((totalScore / maxScore) * 100);
+            
+            document.getElementById('final-score').textContent = 
+                `Final Score: ${totalScore}/${maxScore} points (${percentage}%)`;
+            
+            const finalTextEl = document.getElementById('final-text');
+            if (currentQuiz.finalText) {
+                finalTextEl.textContent = currentQuiz.finalText;
+                finalTextEl.style.display = 'block';
+            } else {
+                finalTextEl.style.display = 'none';
+            }
+        }
+
+        function restartGame() {
+            showTitleScreen();
+        }
+    </script>
+</body>
+</html>
